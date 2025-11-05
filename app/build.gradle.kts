@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp) // [!code ++]
 }
 
 android {
@@ -11,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.learningdashboard"
-        minSdk = 36
+        minSdk = 36 // 按照你的要求保留 API 36
         targetSdk = 36
 
         versionCode = 1
@@ -63,12 +64,17 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
 
-    // MPAndroidChart
+
     implementation(libs.mpandroidchart)
 
-    // Compose Navigation & ViewModel
     implementation(libs.navigation.compose)
     implementation(libs.lifecycle.viewmodel.compose)
+
+    // Room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler) // [!code ++] (使用 ksp 依赖)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

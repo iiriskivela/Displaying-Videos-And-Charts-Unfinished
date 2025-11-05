@@ -1,15 +1,25 @@
 package com.example.learningdashboard.auth
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
-    // User data storage (simulating database)
-    private val registeredUsers = mutableMapOf<String, UserData>()
+    // 1. 初始化数据库、DAO 和 Repository
+    private val repository: AuthRepository
+
+    init {
+        val userDao = AppDatabase.getDatabase(application).userDao()
+        repository = AuthRepository(userDao)
+    }
+
+    // 2. registeredUsers Map 已被删除！数据现在在数据库中。
 
     // Private mutable state
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -17,166 +27,181 @@ class AuthViewModel : ViewModel() {
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     /**
-     * Login validation
-     * @return error message, null means success
+     * Login.
+     * 不再返回 String?。它会启动一个协程并更新 uiState。
      */
-    fun login(user: String, pass: String): String? {
-        // Validate input
-        if (user.isBlank()) {
-            return "Username cannot be empty"
-        }
-        if (pass.isBlank()) {
-            return "Password cannot be empty"
-        }
+    fun login(user: String, pass: String) {
+        // 在协程中启动数据库操作
+        viewModelScope.launch {
+            // A. 开始：清除旧错误并设置加载状态
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        // Check if user exists
-        val userData = registeredUsers[user]
-        if (userData == null) {
-            return "User does not exist, please register first"
-        }
+            // B. 验证输入
+            if (user.isBlank()) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Username cannot be empty") }
+                return@launch
+            }
+            if (pass.isBlank()) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Password cannot be empty") }
+                return@launch
+            }
 
-        // Verify password
-        if (userData.password != pass) {
-            return "Incorrect password"
-        }
+            // C. 访问数据库
+            try {
+                // 注意：我们从 User.kt 实体获取数据
+                val userData = repository.getUserByUsername(user)
 
-        // Login successful
-        _uiState.update {
-            it.copy(
-                isLoggedIn = true,
-                username = user,
-                email = userData.email,
-                fullName = userData.fullName,
-                registeredDate = userData.registeredDate
-            )
+                if (userData == null) {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "User does not exist, please register first") }
+                } else if (userData.passwordHash != pass) { // 检查密码 (真实项目应检查哈希值)
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "Incorrect password") }
+                } else {
+                    // D. 登录成功
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isLoggedIn = true,
+                            username = userData.username,
+                            email = userData.email,
+                            fullName = userData.fullName,
+                            registeredDate = userData.registeredDate
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                // E. 处理数据库或其他异常
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Error: ${e.message}") }
+            }
         }
-        return null
     }
 
     /**
-     * Registration validation
-     * @return error message, null means success
+     * Registration.
+     * 同样，不再返回 String?。
      */
-    fun register(user: String, email: String, pass: String, confirmPass: String): String? {
-        // Validate username
-        if (user.isBlank()) {
-            return "Username cannot be empty"
-        }
-        if (user.length < 3) {
-            return "Username must be at least 3 characters"
-        }
-        if (!user.matches(Regex("^[a-zA-Z0-9_]+$"))) {
-            return "Username can only contain letters, numbers and underscores"
-        }
+    fun register(user: String, email: String, pass: String, confirmPass: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        // Validate email
-        if (email.isBlank()) {
-            return "Email cannot be empty"
-        }
-        if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))) {
-            return "Invalid email format"
-        }
+            // A. 验证所有输入 (这部分逻辑和以前一样)
+            val validationError = validateRegistration(user, email, pass, confirmPass)
+            if (validationError != null) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = validationError) }
+                return@launch
+            }
 
-        // Validate password
-        if (pass.isBlank()) {
-            return "Password cannot be empty"
-        }
-        if (pass.length < 6) {
-            return "Password must be at least 6 characters"
-        }
-        if (pass != confirmPass) {
-            return "Passwords do not match"
-        }
+            // B. 检查用户和 Email 是否已存在 (数据库操作)
+            try {
+                if (repository.getUserByUsername(user) != null) {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "Username is already taken") }
+                    return@launch
+                }
+                if (repository.getUserByEmail(email) != null) {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "Email is already registered") }
+                    return@launch
+                }
 
-        // Check if username already exists
-        if (registeredUsers.containsKey(user)) {
-            return "Username is already taken"
-        }
+                // C. 注册成功, 创建 User 对象并存入数据库
+                val currentTime = System.currentTimeMillis()
+                val newUser = User( // 使用 User 实体
+                    username = user,
+                    email = email,
+                    passwordHash = pass, // 再次提醒：应该存储哈希值
+                    fullName = user,
+                    registeredDate = currentTime
+                )
 
-        // Check if email is already registered
-        if (registeredUsers.values.any { it.email == email }) {
-            return "Email is already registered"
-        }
+                repository.registerUser(newUser)
 
-        // Registration successful, save user data
-        val currentTime = System.currentTimeMillis()
-        registeredUsers[user] = UserData(
-            username = user,
-            email = email,
-            password = pass,
-            fullName = user,
-            registeredDate = currentTime
-        )
+                // D. 自动登录
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        username = newUser.username,
+                        email = newUser.email,
+                        fullName = newUser.fullName,
+                        registeredDate = newUser.registeredDate
+                    )
+                }
 
-        // Auto login
-        _uiState.update {
-            it.copy(
-                isLoggedIn = true,
-                username = user,
-                email = email,
-                fullName = user,
-                registeredDate = currentTime
-            )
+            } catch (e: Exception) {
+                // E. 处理数据库插入异常
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Registration failed: ${e.message}") }
+            }
         }
-        return null
+    }
+
+    // 辅助函数：将验证逻辑提取出来
+    private fun validateRegistration(user: String, email: String, pass: String, confirmPass: String): String? {
+        if (user.isBlank()) return "Username cannot be empty"
+        if (user.length < 3) return "Username must be at least 3 characters"
+        if (!user.matches(Regex("^[a-zA-Z0-9_]+$"))) return "Username can only contain letters, numbers and underscores"
+        if (email.isBlank()) return "Email cannot be empty"
+        if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))) return "Invalid email format"
+        if (pass.isBlank()) return "Password cannot be empty"
+        if (pass.length < 6) return "Password must be at least 6 characters"
+        if (pass != confirmPass) return "Passwords do not match"
+        return null // 全部通过
     }
 
     /**
      * Update user profile
      */
-    fun updateProfile(fullName: String): String? {
-        val currentUser = _uiState.value.username ?: return "Not logged in"
+    fun updateProfile(fullName: String) {
+        val currentUser = _uiState.value.username ?: return // 必须登录
 
-        if (fullName.isBlank()) {
-            return "Name cannot be empty"
-        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        // Update stored user data
-        registeredUsers[currentUser]?.let { userData ->
-            registeredUsers[currentUser] = userData.copy(fullName = fullName)
-        }
+            if (fullName.isBlank()) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Name cannot be empty") }
+                return@launch
+            }
 
-        // Update UI state
-        _uiState.update {
-            it.copy(fullName = fullName)
+            try {
+                repository.updateFullName(currentUser, fullName)
+                // 更新 UI state
+                _uiState.update {
+                    it.copy(isLoading = false, fullName = fullName)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Update failed: ${e.message}") }
+            }
         }
-        return null
     }
 
     /**
      * Logout
      */
     fun logout() {
-        _uiState.update {
-            it.copy(
-                isLoggedIn = false,
-                username = null,
-                email = null,
-                fullName = null,
-                registeredDate = null
-            )
-        }
+        // 登出时重置为初始状态
+        _uiState.value = AuthUiState()
+    }
+
+    /**
+     * 辅助函数：允许 UI 在用户开始输入时清除错误信息
+     */
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
 }
 
-/**
- * Stored user data
- */
-data class UserData(
-    val username: String,
-    val email: String,
-    val password: String,
-    val fullName: String,
-    val registeredDate: Long
-)
 
 /**
- * UI state
+ * UI state - 这是更新后的版本
+ *
+ * 移除了 UserData，因为它现在是 User.kt (数据库实体)
+ * 添加了 isLoading 和 errorMessage 来驱动 UI 状态
  */
 data class AuthUiState(
     val isLoggedIn: Boolean = false,
     val username: String? = null,
     val email: String? = null,
     val fullName: String? = null,
-    val registeredDate: Long? = null
+    val registeredDate: Long? = null,
+
+    // 新增状态，用于驱动 UI
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
 )
