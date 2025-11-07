@@ -22,15 +22,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.learningdashboard.ViewModels.SharedViewModel
 import com.example.learningdashboard.auth.AuthViewModel
 import com.example.learningdashboard.screens.ProfileScreen
 import com.example.learningdashboard.screens.ProgressScreen
+import com.example.learningdashboard.screens.UploadVideoScreen
 import com.example.learningdashboard.screens.VideoScreen
 import com.example.learningdashboard.ui.theme.LearningDashboardTheme
 
@@ -64,6 +67,7 @@ private fun MainAppScreenContent(
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
+    val sharedViewModel: SharedViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -113,11 +117,17 @@ private fun MainAppScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable(Screen.Video.route)    { VideoScreen() }
+            composable(Screen.Video.route)    { VideoScreen(onNavigateToUpload = { navController.navigate("upload") }, sharedViewModel = sharedViewModel) }
             composable(Screen.Progress.route) { ProgressScreen() }
             composable(Screen.Profile.route)  {
                 // If you want profile to use VM data later, pass what it needs as parameters.
                 ProfileScreen()
+            }
+            composable("upload") {
+                UploadVideoScreen(
+                    onNavigateToVideo = { navController.popBackStack() },
+                    sharedViewModel = sharedViewModel
+                )
             }
         }
     }

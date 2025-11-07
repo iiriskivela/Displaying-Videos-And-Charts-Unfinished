@@ -1,4 +1,4 @@
-package com.example.learningdashboard.viewmodels
+package com.example.learningdashboard.ViewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

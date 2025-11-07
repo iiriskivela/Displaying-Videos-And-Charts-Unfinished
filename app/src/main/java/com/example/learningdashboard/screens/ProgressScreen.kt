@@ -19,7 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 // 1. Import the BarChart Composable
 import com.example.learningdashboard.DailyUsageBarChart
 // Import the ViewModel
-import com.example.learningdashboard.viewmodels.UsageTimeViewModel
+import com.example.learningdashboard.ViewModels.UsageTimeViewModel
 // 2. Remove Entry import (no longer needed)
 // import com.github.mikephil.charting.data.Entry
 
