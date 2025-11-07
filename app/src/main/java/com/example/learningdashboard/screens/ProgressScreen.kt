@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,33 +16,28 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-// Import the viewModel() function
 import androidx.lifecycle.viewmodel.compose.viewModel
-// 1. Import the BarChart Composable
 import com.example.learningdashboard.DailyUsageBarChart
-// Import the ViewModel
+// 1. Import the new PieChart Composable
+import com.example.learningdashboard.DailyUsagePieChart
 import com.example.learningdashboard.ViewModels.UsageTimeViewModel
-// 2. Remove Entry import (no longer needed)
-// import com.github.mikephil.charting.data.Entry
 
 // --- Screen 2: Progress ---
 @Composable
 fun ProgressScreen(
-    // Get ViewModel instance via compose-lifecycle library
     viewModel: UsageTimeViewModel = viewModel()
 ) {
-    // 3. Observe chart data (This will be List<BarEntry>)
-    val chartData by viewModel.chartData.collectAsState()
-    // 4. Observe X-axis labels (e.g., "Mon", "Tue", "Today")
+    // --- 2. Observe data for both charts ---
+    val barChartData by viewModel.chartData.collectAsState()
     val labels by viewModel.dayLabels.collectAsState()
+    // 3. Observe new pie chart data
+    val pieChartData by viewModel.pieChartData.collectAsState()
 
     // Use DisposableEffect to manage the timer's lifecycle
-    // (This logic remains the same)
     DisposableEffect(key1 = viewModel) {
-        viewModel.startTracking() // Start tracking
-
+        viewModel.startTracking()
         onDispose {
-            viewModel.stopTracking() // Stop tracking
+            viewModel.stopTracking()
         }
     }
 
@@ -48,20 +45,37 @@ fun ProgressScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            // 4. Add scrolling in case screen is small
+            .verticalScroll(rememberScrollState())
     ) {
+        // --- BAR CHART SECTION ---
         Text(
-            text = "Daily Usage (Minutes)", // 5. Title
+            text = "Daily Usage (Minutes)",
             style = MaterialTheme.typography.headlineMedium
         )
-        Spacer(modifier = Modifier.height(16.dp)) // 6. Add a bit of space
-        // 7. Use DailyUsageBarChart
+        Spacer(modifier = Modifier.height(16.dp))
         DailyUsageBarChart(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp), // Increase height to accommodate labels
-            // 8. Pass BarChart data and labels
-            data = chartData,
+                .height(300.dp),
+            data = barChartData,
             labels = labels
+        )
+
+        // --- 5. PIE CHART SECTION ---
+        Spacer(modifier = Modifier.height(32.dp)) // Space between charts
+
+        Text(
+            text = "Usage Distribution",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        DailyUsagePieChart(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp), // Give it a fixed height
+            data = pieChartData
         )
     }
 }
