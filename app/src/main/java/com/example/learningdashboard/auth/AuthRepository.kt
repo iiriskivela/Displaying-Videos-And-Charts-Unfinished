@@ -1,15 +1,15 @@
 package com.example.learningdashboard.auth
 
-// 不再需要 SharedPreferences 或 Gson 了！
+// No longer need SharedPreferences or Gson!
 
 /**
- * Repository 现在只依赖 DAO 接口
- * 它不再持有任何状态 (比如那个 Map)
+ * The Repository now only depends on the DAO interface
+ * It no longer holds any state (like that Map)
  */
 class AuthRepository(private val userDao: UserDao) {
 
-    // 简单的 "直通" (pass-through) 函数
-    // 错误处理（如 try-catch）将由 ViewModel 负责
+    // Simple pass-through functions
+    // Error handling (like try-catch) will be the ViewModel's responsibility
 
     suspend fun getUserByUsername(username: String): User? {
         return userDao.getUserByUsername(username)
@@ -23,9 +23,25 @@ class AuthRepository(private val userDao: UserDao) {
         userDao.insertUser(user)
     }
 
-    suspend fun updateFullName(username: String, fullName: String) {
-        userDao.updateFullName(username, fullName)
+    /**
+     * --- MODIFIED ---
+     * This function now correctly maps to the new updateUsername function
+     * in the UserDao.
+     */
+    suspend fun updateUsername(oldUsername: String, newUsername: String) {
+        // This function now exists in UserDao.kt and updates the primary key
+        userDao.updateUsername(oldUsername, newUsername)
     }
 
-    // 注意：不再需要 loadUsers 或 saveUsers 了！
+    // Pass-through for updating email
+    suspend fun updateEmail(username: String, email: String) {
+        userDao.updateEmail(username, email)
+    }
+
+    // Pass-through for updating password
+    suspend fun updatePassword(username: String, passwordHash: String) {
+        userDao.updatePassword(username, passwordHash)
+    }
+
+    // Note: loadUsers or saveUsers are no longer needed!
 }

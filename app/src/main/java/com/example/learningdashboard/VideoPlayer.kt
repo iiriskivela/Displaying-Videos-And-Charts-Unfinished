@@ -13,7 +13,8 @@ import androidx.media3.ui.PlayerView
 @Composable
 fun CustomVideoPlayer(
     modifier: Modifier = Modifier,
-    videoUrl: String
+    videoUrl: String,
+    onFullScreenClick: (() -> Unit)? = null // --- New: Optional callback ---
 ) {
     val context = LocalContext.current
 
@@ -39,7 +40,22 @@ fun CustomVideoPlayer(
             // Create PlayerView
             PlayerView(context).apply {
                 player = exoPlayer
+                // --- New: Set listener if callback is provided ---
+                onFullScreenClick?.let { onClick ->
+                    setFullscreenButtonClickListener {
+                        onClick()
+                    }
+                }
             }
+        },
+        // --- New: Update block to handle recomposition ---
+        update = { playerView ->
+            // Update the listener if the callback instance changes
+            onFullScreenClick?.let { onClick ->
+                playerView.setFullscreenButtonClickListener {
+                    onClick()
+                }
+            } ?: playerView.setFullscreenButtonClickListener(null) // Clear listener
         }
     )
 }

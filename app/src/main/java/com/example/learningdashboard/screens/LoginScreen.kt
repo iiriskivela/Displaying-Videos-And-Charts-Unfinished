@@ -33,10 +33,10 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // 1. 从 ViewModel 收集完整的状态
+
     val authState by authViewModel.uiState.collectAsState()
 
-    // 2. 本地的 errorMessage 状态已被移除
+
 
     Column(
         modifier = Modifier
@@ -45,9 +45,9 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. 标题
+
         Text(
-            text = "VidFlow", // 你选择的 App 名字
+            text = "OpenPlatform",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.primary
         )
@@ -57,11 +57,11 @@ fun LoginScreen(
             value = username,
             onValueChange = {
                 username = it
-                authViewModel.clearError() // 3. 用户开始输入时，清除 ViewModel 中的错误信息
+                authViewModel.clearProfileError() // <-- Changed from clearError
             },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
-            isError = authState.errorMessage != null // 4. 从 authState 获取错误状态
+            isError = authState.profileErrorMessage != null // <-- Changed from errorMessage
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -69,35 +69,35 @@ fun LoginScreen(
             value = password,
             onValueChange = {
                 password = it
-                authViewModel.clearError() // 3. 用户开始输入时，清除 ViewModel 中的错误信息
+                authViewModel.clearProfileError() // <-- Changed from clearError
             },
             label = { Text("Password") },
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(), // 隐藏密码
-            isError = authState.errorMessage != null // 4. 从 authState 获取错误状态
+            visualTransformation = PasswordVisualTransformation(),
+            isError = authState.profileErrorMessage != null // <-- Changed from errorMessage
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 5. 显示来自 ViewModel 的错误信息
-        if (authState.errorMessage != null) {
+
+        if (authState.profileErrorMessage != null) { // <-- Changed from errorMessage
             Text(
-                text = authState.errorMessage!!,
-                color = MaterialTheme.colorScheme.error, // 使用主题中的错误颜色
+                text = authState.profileErrorMessage!!, // <-- Changed from errorMessage
+                color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
 
-        // 6. 显示加载指示器或登录按钮
+
         if (authState.isLoading) {
             CircularProgressIndicator()
         } else {
             Button(
                 onClick = {
-                    // 7. onClick 只负责调用函数，不再接收返回值
+
                     authViewModel.login(username, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !authState.isLoading // 加载时禁用按钮
+                enabled = !authState.isLoading
             ) {
                 Text("Login")
             }
@@ -107,7 +107,7 @@ fun LoginScreen(
 
         TextButton(
             onClick = onRegisterClick,
-            enabled = !authState.isLoading // 加载时禁用按钮
+            enabled = !authState.isLoading
         ) {
             Text("Don't have an account? Register")
         }

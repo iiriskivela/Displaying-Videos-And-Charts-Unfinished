@@ -19,9 +19,9 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "learning_dashboard_db" // 数据库文件名
+                    "learning_dashboard_db" // Database file name
                 )
-                    // .fallbackToDestructiveMigration() // 简单起见，升级版本时会清空数据
+                    // .fallbackToDestructiveMigration() // For simplicity, this would clear data on version upgrade
                     .build()
                 INSTANCE = instance
                 instance

@@ -1,4 +1,4 @@
-package com.example.learningdashboard // Ensure this is your package name
+package com.example.learningdashboard // Your package name
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -20,7 +20,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LearningDashboardTheme {
+            // --- Change is here ---
+            // By setting dynamicColor to false,
+            // we force the app to use the colors defined in Theme.kt and Color.kt,
+            // rather than generating colors based on the user's wallpaper.
+            LearningDashboardTheme(dynamicColor = false) {
                 // 2. Observe the login state
                 val authState by authViewModel.uiState.collectAsState()
 

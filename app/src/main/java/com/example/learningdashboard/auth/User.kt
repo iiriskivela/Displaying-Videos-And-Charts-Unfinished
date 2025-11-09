@@ -5,22 +5,22 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * 这将是我们的数据库表 "users" 的结构
+ * This will be the structure of our "users" database table
  *
- * @param username 主键，必须唯一
- * @param email 我们希望 email 也唯一，所以添加索引 (indices)
- * @param passwordHash !!重要!! 真实项目中你不应该存储明文密码。
- * 这里为了简单起见我们还是存储明文，但你应该存储哈希值。
+ * @param username Primary key, must be unique
+ * @param email We want email to be unique too, so add indices
+ * @param passwordHash !!Important!! You should not store plaintext passwords in a real project.
+ * For simplicity, we store plaintext here, but you should store a hash.
  */
 @Entity(
     tableName = "users",
-    indices = [Index(value = ["email"], unique = true)] // 确保 Email 也是唯一的
+    indices = [Index(value = ["email"], unique = true)] // Ensure Email is also unique
 )
 data class User(
     @PrimaryKey
     val username: String,
     val email: String,
-    val passwordHash: String, // 我们把 'password' 重命名为 'passwordHash' 以提醒自己
+    val passwordHash: String, // We rename 'password' to 'passwordHash' as a reminder
     val fullName: String,
     val registeredDate: Long
 )

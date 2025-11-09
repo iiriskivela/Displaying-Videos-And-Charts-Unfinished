@@ -31,15 +31,14 @@ fun RegisterScreen(
     var pass by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
 
-    // ✅ 1. 订阅 ViewModel 的 UI State
+
     val uiState by authViewModel.uiState.collectAsState()
 
-    // ✅ 2. 从 State 中获取 isLoading 和 errorMessage
-    val isLoading = uiState.isLoading
-    val errorMessage = uiState.errorMessage
 
-    // ❌ 3. 移除本地的 error 状态
-    // var error by remember { mutableStateOf<String?>(null) } // <-- 已删除
+    val isLoading = uiState.isLoading
+    val errorMessage = uiState.profileErrorMessage
+
+
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -49,20 +48,20 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = user,
-            // ✅ 推荐：当用户输入时清除错误
+
             onValueChange = {
                 user = it
-                authViewModel.clearError()
+                authViewModel.clearProfileError()
             },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading // ✅ 推荐：加载时禁用
+            enabled = !isLoading
         )
         OutlinedTextField(
             value = email,
             onValueChange = {
                 email = it
-                authViewModel.clearError()
+                authViewModel.clearProfileError()
             },
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
@@ -72,7 +71,7 @@ fun RegisterScreen(
             value = pass,
             onValueChange = {
                 pass = it
-                authViewModel.clearError()
+                authViewModel.clearProfileError()
             },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
@@ -83,7 +82,7 @@ fun RegisterScreen(
             value = confirm,
             onValueChange = {
                 confirm = it
-                authViewModel.clearError()
+                authViewModel.clearProfileError()
             },
             label = { Text("Confirm password") },
             visualTransformation = PasswordVisualTransformation(),
@@ -93,7 +92,7 @@ fun RegisterScreen(
 
         Button(
             onClick = {
-                // ✅ 4. 只调用函数，不接收返回值
+
                 authViewModel.register(
                     user = user.trim(),
                     email = email.trim(),
@@ -102,7 +101,7 @@ fun RegisterScreen(
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading // ✅ 推荐：加载时禁用
+            enabled = !isLoading
         ) { Text("Register") }
 
         Button(
@@ -111,7 +110,6 @@ fun RegisterScreen(
             enabled = !isLoading
         ) { Text("Have an account? Sign in") }
 
-        // ✅ 5. 显示来自 ViewModel state 的错误
         if (errorMessage != null) {
             Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
         }
