@@ -21,20 +21,26 @@ fun DailyUsagePieChart(
     AndroidView(
         modifier = modifier,
         factory = { context ->
-            // --- 1. Create and initialize PieChart ---
             PieChart(context).apply {
+
                 description.isEnabled = false
                 isDrawHoleEnabled = true
                 setHoleColor(Color.Transparent.toArgb())
                 setDrawEntryLabels(false)
                 setUsePercentValues(true)
 
-                // --- 2. Configure Legend ---
+                // --- LEGEND CONFIGURATION ---
                 legend.apply {
                     isEnabled = true
-                    verticalAlignment = Legend.LegendVerticalAlignment.CENTER
-                    horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-                    orientation = Legend.LegendOrientation.VERTICAL
+
+                    // TODO (STUDENT TASK 1):
+                    // Set the legend to be **vertical** and on the center and positioned on the right side.
+                    // verticalAlignment = TODO
+                    // horizontalAlignment = TODO
+                    // orientation = TODO
+                    //
+                    // Example expected result: Legend appears on the right side of the chart.
+
                     setDrawInside(false)
 
                     // --- 3. Reduce legend text and shape size ---
@@ -43,7 +49,8 @@ fun DailyUsagePieChart(
                     textSize = 10f                 // <-- Reduced (was 12f)
                     yEntrySpace = 3f               // <-- Reduced entry spacing (was 5f)
 
-                    isWordWrapEnabled = true
+                    // TODO (STUDENT TASK 2):
+                    // Enable word wrapping to prevent clipping on small screens.
                 }
             }
         },

@@ -99,14 +99,12 @@ fun VideoScreen(
                 )
             }
 
-            // --- Display all videos using VideoCardItem ---
-            items(allVideos, key = { it.id }) { video ->
-                VideoCardItem(
-                    video = video,
-                    // --- New: Pass the click handler ---
-                    onFullScreenClick = { onNavigateToFullScreen(video.videoUrl) }
-                )
-            }
+            // TODO: [Exercise] Display the list of videos.
+            // 1. Use the `items` function to iterate through the `allVideos` list.
+            // 2. For each `video`, call the `VideoCardItem` composable.
+            // 3. Pass the `video` and the `onNavigateToFullScreen` callback.
+            // Start it this way:
+            // items(allVideos, key = { it.id }) {TODO}
 
             item {
                 // Add some space at the bottom

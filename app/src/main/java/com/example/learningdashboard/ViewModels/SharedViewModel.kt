@@ -8,10 +8,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class SharedViewModel : ViewModel() {
-    private val _videoUris = MutableStateFlow<List<Uri>>(emptyList())
-    val videoUris: StateFlow<List<Uri>> = _videoUris.asStateFlow()
+    // TODO: [Exercise] Students need to implement the state management for video URIs.
+    // 1. Create a private MutableStateFlow to hold a list of video URIs.
+    //    It should be initialized with an empty list.
+    //    Start it this way:
+    //    private val _videoUris = TODO
 
-    fun addVideoUri(uri: Uri) {
-        _videoUris.update { currentList -> currentList + uri }
-    }
+    // 2. Expose the private state flow as a public, read-only StateFlow.
+    //    Start it this way_
+    //    val videoUris: TODO
+
+    // 3. Create a function to add a new video URI to the list.
+    //    This function should update the state flow.
+    //    Start it this way:
+    //    fun addVideoUri(uri: Uri) {TODO}
+
 }

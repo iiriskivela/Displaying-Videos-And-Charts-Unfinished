@@ -39,15 +39,13 @@ fun UploadVideoScreen(
     onNavigateToVideo: () -> Unit,
     sharedViewModel: SharedViewModel
 ) {
-    // --- 1. Use local state to hold the selected URI temporarily ---
     var selectedVideoUri by remember { mutableStateOf<Uri?>(null) }
 
-    // --- 2. The launcher now only updates the local state ---
+    // --- The launcher updates the local state ---
     val pickVideoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             selectedVideoUri = uri
-            // We NO LONGER add to the viewModel here
         }
     )
 
@@ -71,7 +69,6 @@ fun UploadVideoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            // --- Center the content ---
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -85,7 +82,6 @@ fun UploadVideoScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- 3. Show selected video info in a Card ---
             if (selectedVideoUri != null) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -106,15 +102,13 @@ fun UploadVideoScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- 4. Add a "Confirm Upload" button ---
+                // TODO: [Exercise] Students need to implement the onClick for this button.
+                // 1. Get the `selectedVideoUri` (make sure it's not null).
+                // 2. Call the `addVideoUri` function on the `sharedViewModel`.
+                // 3. Call the `onNavigateToVideo` function to go back to the previous screen.
                 Button(
                     onClick = {
-                        selectedVideoUri?.let {
-                            // This is when we add to the ViewModel
-                            sharedViewModel.addVideoUri(it)
-                            // And then navigate back
-                            onNavigateToVideo()
-                        }
+                        // TODO
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = selectedVideoUri != null

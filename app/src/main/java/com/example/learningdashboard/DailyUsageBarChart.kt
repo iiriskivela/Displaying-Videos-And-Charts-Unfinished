@@ -22,39 +22,51 @@ fun DailyUsageBarChart(
     AndroidView(
         modifier = modifier,
         factory = { context ->
-            // --- 1. 创建和初始化 BarChart ---
             BarChart(context).apply {
+
                 description.isEnabled = false
                 setDrawGridBackground(false)
-                setDrawValueAboveBar(true) // 在柱子上方显示数值
+                setDrawValueAboveBar(true)
 
-                // --- 2. X轴 设置 ---
+                // --- X Axis Configuration ---
                 xAxis.apply {
                     position = XAxis.XAxisPosition.BOTTOM
                     setDrawGridLines(false)
                     granularity = 1f
                     isGranularityEnabled = true
-                    // 关键：设置X轴的标签
-                    valueFormatter = IndexAxisValueFormatter(labels)
+
+                    // TODO (STUDENT TASK 1):
+                    // Assign `IndexAxisValueFormatter(labels)` to `valueFormatter`
+                    // This should display the day labels beneath each bar.
+                    // Example result: Mon, Tue, Wed, Thu, Fri, Sat, Today
+                    //
+                    // Put it below:
+                    // TODO
                 }
 
-                // --- 3. Y轴 设置 ---
+                // --- Y Axis Configuration ---
                 axisLeft.apply {
                     setDrawGridLines(true)
-                    axisMinimum = 0f // Y轴从0开始
-                    // 添加 " min" 后缀
-                    valueFormatter = object : ValueFormatter() {
-                        override fun getFormattedValue(value: Float): String {
-                            return "${value.toInt()} min"
-                        }
-                    }
-                }
-                axisRight.isEnabled = false // 禁用右侧Y轴
+                    axisMinimum = 0f
 
-                legend.isEnabled = false // 禁用图例
+                    // TODO (STUDENT TASK 2):
+                    // Implement a ValueFormatter that returns the value in minutes
+                    // Format: "X min" (e.g., 45 → "45 min")
+                    // Uncomment below when implemented:
+                    //
+                    // valueFormatter = object : ValueFormatter() {
+                    //     override fun getFormattedValue(value: Float): String {
+                    //         return TODO
+                    //     }
+                    // }
+                }
+
+                axisRight.isEnabled = false
+                legend.isEnabled = false
             }
         },
         update = { chart ->
+
             // --- 4. 更新数据 ---
             val dataSet = BarDataSet(data, "Daily Usage").apply {
                 color = Color(0xFF5C6BC0).toArgb() // 漂亮的靛蓝色
@@ -69,12 +81,19 @@ fun DailyUsageBarChart(
                 }
             }
 
-            val barData = BarData(dataSet)
-            barData.barWidth = 0.6f // 设置柱子的宽度
+            // TODO (STUDENT TASK 3):
+            // Create a BarData object called barData using the `dataSet` you implemented above:
+            // Put it below here:
+            // TODO
+            //
+            // Then set bar width to 0.6f. Put it below:
+            // TODO
 
             chart.data = barData
-            chart.setFitBars(true) // 让柱子适应图表宽度
-            chart.invalidate() // 刷新图表
+
+            chart.setFitBars(true)
+
+            chart.invalidate()
         }
     )
 }

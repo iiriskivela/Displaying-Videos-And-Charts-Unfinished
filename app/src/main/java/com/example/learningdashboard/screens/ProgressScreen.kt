@@ -54,13 +54,13 @@ fun ProgressScreen(
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(16.dp))
-        DailyUsageBarChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            data = barChartData,
-            labels = labels
-        )
+
+        // TODO: [Exercise] Students need to display the DailyUsageBarChart.
+        // 1. Call the `DailyUsageBarChart` composable.
+        // 2. Pass the `barChartData` and `labels` to the chart. (data = ?: labels = ?)
+        // 3. Give the chart a modifier to fill the width and have a height of 300.dp.
+        // Like this: DailyUsageBarChart(TODO)
+
 
         // --- 5. PIE CHART SECTION ---
         Spacer(modifier = Modifier.height(32.dp)) // Space between charts
